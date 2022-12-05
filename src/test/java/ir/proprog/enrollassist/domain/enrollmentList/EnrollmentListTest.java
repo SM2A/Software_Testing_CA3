@@ -30,9 +30,9 @@ public class EnrollmentListTest {
         Section section1 = new Section(new Course("1234567", "CA", 3, GraduateLevel.Undergraduate.name()),
                 "1", new ExamTime("2022-12-21T13:00", "2022-12-21T16:00"), null);
         Section section2 = new Section(new Course("2234567", "CB", 2, GraduateLevel.Undergraduate.name()),
-                "2", new ExamTime("2022-12-21T13:00", "2022-12-21T16:00"), null);
+                "2", new ExamTime("2022-12-22T13:00", "2022-12-22T16:00"), null);
         Section section3 = new Section(new Course("3234567", "CC", 1, GraduateLevel.Undergraduate.name()),
-                "3", new ExamTime("2022-12-21T08:00", "2022-12-21T11:00"), null);
+                "3", new ExamTime("2022-12-23T08:00", "2022-12-23T11:00"), null);
 
         enrollmentList.addSections(section1, section2, section3);
     }
@@ -200,6 +200,43 @@ public class EnrollmentListTest {
         when(student.getTotalTakenCredits()).thenReturn(10);
 
         assertEquals(2, enrollmentList.checkValidGPALimit().size());
+    }
+
+    @Test
+    public void checkExamTimeConflicts_no_violation_test() {
+        assertFalse(enrollmentList.checkExamTimeConflicts().size() >= 1);
+    }
+
+    @Test
+    public void checkExamTimeConflicts_no_violation_exam_time_null_test() {
+        Section section = mock(Section.class);
+
+        enrollmentList.addSection(section);
+
+        when(section.getExamTime()).thenReturn(null);
+
+        assertFalse(enrollmentList.checkExamTimeConflicts().size() >= 1);
+    }
+
+    @Test
+    public void checkExamTimeConflicts_conflict_exam_time_test() throws Exception {
+        Section section = new Section(new Course("1234567", "CA", 3, GraduateLevel.Undergraduate.name()),
+                "1", new ExamTime("2022-12-21T13:00", "2022-12-21T16:00"), null);
+
+        enrollmentList.addSection(section);
+
+        assertTrue(enrollmentList.checkExamTimeConflicts().size() >= 1);
+    }
+
+    @Test
+    public void checkExamTimeConflicts_conflict_exam_time_same_section_test() throws Exception {
+        Section section = new Section(new Course("1234567", "CA", 3, GraduateLevel.Undergraduate.name()),
+                "1", new ExamTime("2022-12-21T13:00", "2022-12-21T16:00"), null);
+
+        enrollmentList.addSection(section);
+        enrollmentList.addSection(section);
+
+        assertTrue(enrollmentList.checkExamTimeConflicts().size() >= 1);
     }
 
 }
